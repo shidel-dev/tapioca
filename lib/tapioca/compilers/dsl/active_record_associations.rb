@@ -262,7 +262,7 @@ module Tapioca
           ).returns(String)
         end
         def type_for(constant, reflection)
-          return "T.untyped" if !constant.table_exists? || polymorphic_association?(reflection)
+          return "T.untyped" if !constant.table_exists? || polymorphic_association?(constant, reflection)
 
           "::#{reflection.klass.name}"
         end
@@ -275,7 +275,7 @@ module Tapioca
         end
         def relation_type_for(constant, reflection)
           "ActiveRecord::Associations::CollectionProxy" if !constant.table_exists? ||
-                                                            polymorphic_association?(reflection)
+                                                            polymorphic_association?(constant, reflection)
 
           # Change to: "::#{reflection.klass.name}::ActiveRecord_Associations_CollectionProxy"
           "::ActiveRecord::Associations::CollectionProxy[#{reflection.klass.name}]"
@@ -283,12 +283,17 @@ module Tapioca
 
         sig do
           params(
+            constant: T.class_of(ActiveRecord::Base),
             reflection: ReflectionType
           ).returns(T::Boolean)
         end
-        def polymorphic_association?(reflection)
+        def polymorphic_association?(constant, reflection)
+          # unless reflection
+          #   add_error()
+          # end
+
           if reflection.through_reflection?
-            polymorphic_association?(reflection.source_reflection)
+            polymorphic_association?(constant, reflection.source_reflection)
           else
             !!reflection.polymorphic?
           end
