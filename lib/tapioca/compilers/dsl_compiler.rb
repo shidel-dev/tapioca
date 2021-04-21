@@ -50,6 +50,14 @@ module Tapioca
 
           blk.call(constant, rbi)
         end
+
+        errors_generated = generators.flat_map(&:errors)
+
+        unless errors_generated.empty?
+          errors_generated.each do |error|
+            report_error(error)
+          end
+        end
       end
 
       private

@@ -15,9 +15,13 @@ module Tapioca
         sig { returns(T::Set[Module]) }
         attr_reader :processable_constants
 
+        sig { returns(T::Array[String]) }
+        attr_reader :errors
+
         sig { void }
         def initialize
           @processable_constants = T.let(Set.new(gather_constants), T::Set[Module])
+          @errors = T.let([], T::Array[String])
         end
 
         sig { params(constant: Module).returns(T::Boolean) }
@@ -50,6 +54,11 @@ module Tapioca
         def valid_method_name?(name)
           return true if SPECIAL_METHOD_NAMES.include?(name)
           !!name.match(/^[a-zA-Z_][[:word:]]*[?!=]?$/)
+        end
+
+        sig { params(message: String).void }
+        def add_error(message)
+          @errors << message
         end
 
         sig do
