@@ -128,6 +128,7 @@ module Tapioca
         sig { params(name: String, constant: Module).returns(T.nilable(String)) }
         def compile_alias(name, constant)
           return if symbol_ignored?(name)
+          return unless constant_in_gem?(name)
 
           target = name_of(constant)
           # If target has no name, let's make it an anonymous class or module with `Class.new` or `Module.new`
@@ -147,6 +148,8 @@ module Tapioca
         end
         def compile_object(name, value)
           return if symbol_ignored?(name)
+          return unless constant_in_gem?(name)
+
           klass = class_of(value)
           klass_name = name_of(klass)
 
@@ -745,6 +748,16 @@ module Tapioca
         sig { params(str: String).returns(String) }
         def indented(str)
           " " * @indent + str
+        end
+
+        sig { params(name: T.any(String, Symbol)).returns(T::Boolean) }
+        def constant_in_gem?(name)
+          return true unless Object.respond_to?(:const_source_location)
+
+          source_location, _ = Object.const_source_location(name)
+          return true unless source_location
+
+          gem.contains_path?(source_location)
         end
 
         sig { params(method: UnboundMethod).returns(T::Boolean) }

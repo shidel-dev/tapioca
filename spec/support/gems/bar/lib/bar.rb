@@ -9,3 +9,7 @@ module Bar
     39 + a + b + number
   end
 end
+
+module Foo
+  E = 2.718281828459045
+end

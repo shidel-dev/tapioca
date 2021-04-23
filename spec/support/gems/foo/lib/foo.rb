@@ -2,9 +2,10 @@
 # frozen_string_literal: true
 
 module Foo
-  PI = 3.1415
+  PI = Math::PI
+  PI2 = 2 * PI
 
-  def self.bar(a = 1, b: 2, **opts)
+  def self.foo(a = 1, b: 2, **opts)
     number = opts[:number] || 0
     39 + a + b + number
   end
