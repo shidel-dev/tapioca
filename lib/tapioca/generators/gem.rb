@@ -22,6 +22,7 @@ module Tapioca
           outpath: Pathname,
           file_header: T::Boolean,
           doc: T::Boolean,
+          include_exported_rbis: T::Boolean,
           file_writer: Thor::Actions
         ).void
       end
@@ -35,6 +36,7 @@ module Tapioca
         outpath:,
         file_header:,
         doc:,
+        include_exported_rbis:,
         file_writer: FileWriter.new
       )
         @gem_names = gem_names
@@ -52,6 +54,7 @@ module Tapioca
         @existing_rbis = T.let(nil, T.nilable(T::Hash[String, String]))
         @expected_rbis = T.let(nil, T.nilable(T::Hash[String, String]))
         @doc = T.let(doc, T::Boolean)
+        @include_exported_rbis = include_exported_rbis
       end
 
       sig { override.void }
@@ -148,7 +151,7 @@ module Tapioca
         strictness = @typed_overrides[gem.name] || "true"
         rbi = RBI::File.new
         compiler.compile(gem, rbi, 0, @doc)
-        rbi = merge_with_exported_rbi(gem, rbi)
+        rbi = merge_with_exported_rbi(gem, rbi) if @include_exported_rbis
         rbi_body_content = rbi.transformed_string
         content = String.new
         content << rbi_header(

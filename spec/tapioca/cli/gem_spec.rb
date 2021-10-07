@@ -136,6 +136,19 @@ module Tapioca
           refute_path_exists("#{repo_path}/sorbet/rbi/gems/baz@0.0.2.rbi")
         end
 
+        it "must generate a gem RBI without the ones exported from the gem when called with `--no-exported-gem-rbis`" do
+          output = execute("gem bar --no-exported-gem-rbis")
+
+          assert_includes(output, <<~OUTPUT)
+            Processing 'bar' gem:
+              Compiling bar, this may take a few seconds...   Done
+          OUTPUT
+
+          refute_includes(output, "RBIs exported by `bar` contain conflicts and can't be used")
+          assert_path_exists("#{outdir}/bar@0.3.0.rbi")
+          refute_includes(File.read("#{outdir}/bar@0.3.0.rbi"), "def foo")
+        end
+
         it "must generate a gem RBI and skip exported gem RBIs if they contain conflicts" do
           output = execute("gem", "bar")
 
@@ -230,7 +243,7 @@ module Tapioca
         end
 
         it "must generate multiple gem RBIs" do
-          output = execute("gem", ["foo", "bar"])
+          output = execute("gem", ["foo", "bar", "--no-exported-gem-rbis"])
 
           assert_includes(output, <<~OUTPUT)
             Processing 'foo' gem:
@@ -253,7 +266,7 @@ module Tapioca
         end
 
         it "must generate RBIs for all gems in the Gemfile" do
-          output = execute("gem", "--all")
+          output = execute("gem", "--all --no-exported-gem-rbis")
 
           assert_includes(output, <<~OUTPUT)
             Processing 'bar' gem:
@@ -308,7 +321,7 @@ module Tapioca
         end
 
         it "must respect exclude option" do
-          output = execute("gem", "--all", exclude: "foo bar fizz")
+          output = execute("gem", "--all --no-exported-gem-rbis", exclude: "foo bar fizz")
 
           refute_includes(output, <<~OUTPUT)
             Processing 'bar' gem:

@@ -131,6 +131,10 @@ module Tapioca
       type: :boolean,
       default: false,
       desc: "Include YARD documentation from sources when generating RBIs. Warning: this might be slow"
+    option :exported_gem_rbis,
+      type: :boolean,
+      default: true,
+      desc: "Include RBIs found in the `rbi/` directory of the gem"
     def gem(*gems)
       Tapioca.silence_warnings do
         all = options[:all]
@@ -146,7 +150,8 @@ module Tapioca
           default_command: Config::DEFAULT_COMMAND,
           outpath: config.outpath,
           file_header: config.file_header,
-          doc: config.doc
+          doc: config.doc,
+          include_exported_rbis: config.exported_gem_rbis
         )
 
         raise MalformattedArgumentError, "Options '--all' and '--verify' are mutually exclusive" if all && verify

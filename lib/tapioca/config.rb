@@ -15,6 +15,7 @@ module Tapioca
     const(:generators, T::Array[String])
     const(:file_header, T::Boolean, default: true)
     const(:doc, T::Boolean, default: false)
+    const(:exported_gem_rbis, T::Boolean, default: true)
 
     sig { returns(Pathname) }
     def outpath
