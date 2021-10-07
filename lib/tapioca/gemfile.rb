@@ -154,7 +154,7 @@ module Tapioca
 
       sig { returns(T::Array[String]) }
       def exported_rbi_files
-        Dir.glob("#{full_gem_path}/rbi/*.rbi")
+        Dir.glob("#{full_gem_path}/rbi/**/*.rbi")
       end
 
       sig { returns(T::Boolean) }
