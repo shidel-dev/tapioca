@@ -136,6 +136,50 @@ module Tapioca
           refute_path_exists("#{repo_path}/sorbet/rbi/gems/baz@0.0.2.rbi")
         end
 
+        it "must generate a gem RBI and skip exported gem RBIs if they contain conflicts" do
+          output = execute("gem", "bar")
+
+          [
+            "RBIs exported by `bar` contain conflicts and can't be used:",
+            "Conflicting definitions for `::Bar::Test#foo(a, b)`",
+            "Found at:",
+            "support/gems/bar/rbi/first.rbi:9:4-9:54",
+            "support/gems/bar/rbi/second.rbi:9:4-9:35",
+          ].each do |message|
+            assert_includes(output, message)
+          end
+
+          assert_path_exists("#{outdir}/bar@0.3.0.rbi")
+          assert_equal(BAR_RBI, File.read("#{outdir}/bar@0.3.0.rbi"))
+        end
+
+        it "must generate a gem RBI and include exported definitions" do
+          output = execute("gem", "baz")
+
+          compiling_spec = "Compiling baz, this may take a few seconds..."
+          assert_includes(output, compiling_spec)
+
+          assert_path_exists("#{outdir}/baz@0.0.2.rbi")
+          assert_includes(File.read("#{outdir}/baz@0.0.2.rbi"), <<~RBI)
+            module Baz
+              sig { params(a: T.nilable(Integer)).void }
+              def foo(a = T.unsafe(nil)); end
+            end
+          RBI
+        end
+
+        it "must generate a gem RBI and resolves conflicts with exported gem RBIs by keeping the generated RBI" do
+          output = execute("gem", "fizz")
+
+          assert_includes(output, <<~OUTPUT)
+            Processing 'fizz' gem:
+              Compiling fizz, this may take a few seconds...   Done
+          OUTPUT
+
+          assert_path_exists("#{outdir}/fizz@0.4.0.rbi")
+          assert_equal(FIZZ_RBI, File.read("#{outdir}/fizz@0.4.0.rbi"))
+        end
+
         it "must perform postrequire properly" do
           output = execute("gem", "foo", postrequire: repo_path / "postrequire.rb")
 

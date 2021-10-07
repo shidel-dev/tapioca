@@ -148,6 +148,7 @@ module Tapioca
         strictness = @typed_overrides[gem.name] || "true"
         rbi = RBI::File.new
         compiler.compile(gem, rbi, 0, @doc)
+        rbi = merge_with_exported_rbi(gem, rbi)
         rbi_body_content = rbi.transformed_string
         content = String.new
         content << rbi_header(
@@ -380,6 +381,33 @@ module Tapioca
         end.join("\n  - ")
 
         "  File(s) #{cause}:\n  - #{filenames}"
+      end
+
+      sig { params(gem: Gemfile::GemSpec, file: RBI::File).returns(RBI::File) }
+      def merge_with_exported_rbi(gem, file)
+        return file unless gem.export_rbi_files?
+        merge_result = gem.exported_rbi_tree
+        merged_tree = merge_result.tree
+
+        unless merge_result.conflicts.empty?
+          say("\n\n  RBIs exported by `#{gem.name}` contain conflicts and can't be used:", :yellow)
+
+          merge_result.conflicts.each do |conflict|
+            say("\n    #{conflict}", :yellow)
+            say("    Found at:", :yellow)
+            say("      #{conflict.left.loc}", :yellow)
+            say("      #{conflict.right.loc}", :yellow)
+          end
+
+          return file
+        end
+
+        new_tree = RBI::Rewriters::Merge.merge_trees(file.root, merged_tree, keep: RBI::Rewriters::Merge::Keep::LEFT)
+
+        # TODO: Add `File#root=`?
+        RBI::File.new do |new_file|
+          new_tree.nodes.each { |node| new_file.root << node }
+        end
       end
     end
   end
