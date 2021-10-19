@@ -20,6 +20,12 @@ class DslSpec < Minitest::Spec
     require(T.unsafe(self).target_class_file)
   end
 
+  sig { void }
+  def teardown
+    super
+    T.unsafe(self).subject.errors.clear
+  end
+
   subject do
     # Get the class under test and initialize a new instance of it
     # as the "subject"
@@ -81,5 +87,12 @@ class DslSpec < Minitest::Spec
     parlour = Parlour::RbiGenerator.new(sort_namespaces: true)
     T.unsafe(self).subject.decorate(parlour.root, Object.const_get(constant_name))
     parlour.rbi
+  end
+
+  sig do
+    returns(T::Array[String])
+  end
+  def generator_errors
+    T.unsafe(self).subject.errors
   end
 end

@@ -283,6 +283,14 @@ class Tapioca::Compilers::Dsl::ActiveRecordAssociationsSpec < DslSpec
           ActiveRecord::Schema.define do
             create_table :posts do |t|
             end
+
+            # create_table :comments do |t|
+            #   t.references(:post, null: false)
+            #   t.references(:commenter, null: false)
+            # end
+
+            # create_table :commenters do |t|
+            # end
           end
         end
       RUBY
@@ -303,8 +311,8 @@ class Tapioca::Compilers::Dsl::ActiveRecordAssociationsSpec < DslSpec
 
       add_ruby_file("post.rb", <<~RUBY)
         class Post < ActiveRecord::Base
-          has_many :comments
-          has_many :commenters, through: :comments
+          belongs_to :comment
+          has_many :commenters, through: :comment
 
           accepts_nested_attributes_for :commenters
         end
@@ -346,7 +354,80 @@ class Tapioca::Compilers::Dsl::ActiveRecordAssociationsSpec < DslSpec
         end
       RBI
 
+      assert_equal(0, generator_errors.size)
       assert_equal(expected, rbi_for(:Post))
+    end
+
+    it("generates RBI file for broken has_many :through collection association with errors") do
+      add_ruby_file("schema.rb", <<~RUBY)
+        ActiveRecord::Migration.suppress_messages do
+          ActiveRecord::Schema.define do
+            create_table :posts do |t|
+              t.references(:shop)
+            end
+
+            create_table :shops do |t|
+            end
+
+            create_table :managers do |t|
+              t.references(:shop)
+            end
+          end
+        end
+      RUBY
+
+      add_ruby_file("commenter.rb", <<~RUBY)
+        class Manager < ActiveRecord::Base
+          belongs_to :shop
+        end
+      RUBY
+
+      add_ruby_file("comment.rb", <<~RUBY)
+        class Shop < ActiveRecord::Base
+          has_many :managers
+        end
+      RUBY
+
+      add_ruby_file("post.rb", <<~RUBY)
+        class Post < ActiveRecord::Base
+          belongs_to :shop
+          has_one :manager, through: :shop
+        end
+      RUBY
+
+      expected = <<~RBI
+        # typed: strong
+        class Post
+          include GeneratedAssociationMethods
+
+          module GeneratedAssociationMethods
+            sig { params(args: T.untyped, blk: T.untyped).returns(::Shop) }
+            def build_shop(*args, &blk); end
+
+            sig { params(args: T.untyped, blk: T.untyped).returns(::Shop) }
+            def create_shop(*args, &blk); end
+
+            sig { params(args: T.untyped, blk: T.untyped).returns(::Shop) }
+            def create_shop!(*args, &blk); end
+
+            sig { returns(T.nilable(::Shop)) }
+            def reload_shop; end
+
+            sig { returns(T.nilable(::Shop)) }
+            def shop; end
+
+            sig { params(value: T.nilable(::Shop)).void }
+            def shop=(value); end
+          end
+        end
+      RBI
+
+      assert_equal(expected, rbi_for(:Post))
+
+      assert_equal(1, generator_errors.size)
+      assert_equal(<<~MSG, generator_errors.first)
+        Cannot generate association `manager` on `Post` since the source of the through association is missing.
+      MSG
     end
 
     it("generates RBI file for has_and_belongs_to_many collection association") do
