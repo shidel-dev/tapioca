@@ -860,6 +860,99 @@ module Rails::Autoloaders
   end
 end
 
+module Rails::Command
+  include ::Rails::Command::Behavior
+  extend ::ActiveSupport::Autoload
+  extend ::Rails::Command::Behavior::ClassMethods
+
+  class << self
+    def environment; end
+    def find_by_namespace(namespace, command_name = T.unsafe(nil)); end
+    def hidden_commands; end
+    def invoke(full_namespace, args = T.unsafe(nil), **config); end
+    def print_commands; end
+    def root; end
+
+    private
+
+    def command_type; end
+    def commands; end
+    def file_lookup_paths; end
+    def lookup_paths; end
+  end
+end
+
+module Rails::Command::Actions
+  def load_generators; end
+  def load_tasks; end
+  def require_application!; end
+  def require_application_and_environment!; end
+  def require_environment!; end
+  def set_application_directory!; end
+end
+
+class Rails::Command::Base < ::Thor
+  include ::Rails::Command::Actions
+
+  def help; end
+
+  class << self
+    def banner(*_arg0); end
+    def base_name; end
+    def command_name; end
+    def default_command_root; end
+    def desc(usage = T.unsafe(nil), description = T.unsafe(nil), options = T.unsafe(nil)); end
+    def engine?; end
+    def executable; end
+    def exit_on_failure?; end
+    def hide_command!; end
+    def inherited(base); end
+    def namespace(name = T.unsafe(nil)); end
+    def perform(command, args, config); end
+    def printing_commands; end
+    def usage_path; end
+
+    private
+
+    def command_root_namespace; end
+    def create_command(meth); end
+    def namespaced_commands; end
+    def relative_command_path; end
+  end
+end
+
+class Rails::Command::Base::Error < ::Thor::Error; end
+
+module Rails::Command::Behavior
+  extend ::ActiveSupport::Concern
+
+  mixes_in_class_methods ::Rails::Command::Behavior::ClassMethods
+end
+
+module Rails::Command::Behavior::ClassMethods
+  def no_color!; end
+  def subclasses; end
+
+  private
+
+  def lookup(namespaces); end
+  def lookup!; end
+  def namespaces_to_paths(namespaces); end
+  def print_list(base, namespaces); end
+end
+
+Rails::Command::HELP_MAPPINGS = T.let(T.unsafe(nil), Array)
+
+module Rails::Command::Spellchecker
+  class << self
+    def suggest(word, from:); end
+
+    private
+
+    def levenshtein_distance(str1, str2); end
+  end
+end
+
 module Rails::Configuration; end
 
 class Rails::Configuration::Generators
@@ -1503,6 +1596,419 @@ class Rails::Engine::Railties
   def _all; end
 
   def each(*args, &block); end
+end
+
+module Rails::Generators
+  include ::Rails::Command::Behavior
+  extend ::Rails::Command::Behavior::ClassMethods
+
+  def namespace; end
+  def namespace=(val); end
+
+  class << self
+    def add_generated_file(file); end
+    def after_generate_callbacks; end
+    def aliases; end
+    def api_only!; end
+    def configure!(config); end
+    def fallbacks; end
+    def find_by_namespace(name, base = T.unsafe(nil), context = T.unsafe(nil)); end
+    def help(command = T.unsafe(nil)); end
+    def hidden_namespaces; end
+    def hide_namespace(*namespaces); end
+    def hide_namespaces(*namespaces); end
+    def invoke(namespace, args = T.unsafe(nil), config = T.unsafe(nil)); end
+    def namespace; end
+    def namespace=(val); end
+    def options; end
+    def print_generators; end
+    def public_namespaces; end
+    def sorted_groups; end
+    def templates_path; end
+
+    private
+
+    def command_type; end
+    def file_lookup_paths; end
+    def invoke_fallbacks_for(name, base); end
+    def lookup_paths; end
+    def print_list(base, namespaces); end
+    def run_after_generate_callback; end
+  end
+end
+
+module Rails::Generators::Actions
+  def initialize(*_arg0); end
+
+  def add_source(source, options = T.unsafe(nil), &block); end
+  def application(data = T.unsafe(nil), options = T.unsafe(nil)); end
+  def environment(data = T.unsafe(nil), options = T.unsafe(nil)); end
+  def gem(*args); end
+  def gem_group(*names, &block); end
+  def generate(what, *args); end
+  def git(commands = T.unsafe(nil)); end
+  def github(repo, options = T.unsafe(nil), &block); end
+  def initializer(filename, data = T.unsafe(nil)); end
+  def lib(filename, data = T.unsafe(nil)); end
+  def rails_command(command, options = T.unsafe(nil)); end
+  def rake(command, options = T.unsafe(nil)); end
+  def rakefile(filename, data = T.unsafe(nil)); end
+  def readme(path); end
+  def route(routing_code, namespace: T.unsafe(nil)); end
+  def vendor(filename, data = T.unsafe(nil)); end
+
+  private
+
+  def append_file_with_newline(path, str, options = T.unsafe(nil)); end
+  def execute_command(executor, command, options = T.unsafe(nil)); end
+  def extify(name); end
+  def indentation; end
+  def log(*args); end
+  def optimize_indentation(value, amount = T.unsafe(nil)); end
+  def quote(value); end
+  def with_indentation(&block); end
+end
+
+class Rails::Generators::Actions::CreateMigration < ::Thor::Actions::CreateFile
+  def existing_migration; end
+  def exists?; end
+  def identical?; end
+  def invoke!; end
+  def migration_dir; end
+  def migration_file_name; end
+  def relative_existing_migration; end
+  def revoke!; end
+
+  private
+
+  def on_conflict_behavior; end
+  def say_status(status, color, message = T.unsafe(nil)); end
+end
+
+class Rails::Generators::ActiveModel
+  def initialize(name); end
+
+  def destroy; end
+  def errors; end
+  def name; end
+  def save; end
+  def update(params = T.unsafe(nil)); end
+
+  class << self
+    def all(klass); end
+    def build(klass, params = T.unsafe(nil)); end
+    def find(klass, params = T.unsafe(nil)); end
+  end
+end
+
+class Rails::Generators::AppBase < ::Rails::Generators::Base
+  include ::Rails::Generators::Database
+  include ::Rails::Generators::AppName
+
+  def initialize(positional_argv, option_argv, *_arg2); end
+
+  def app_path; end
+  def app_path=(_arg0); end
+  def rails_template; end
+  def rails_template=(_arg0); end
+  def shebang; end
+
+  private
+
+  def add_gem_entry_filter; end
+  def apply_rails_template; end
+  def assets_gemfile_entry; end
+  def build(meth, *args); end
+  def builder; end
+  def bundle_command(command, env = T.unsafe(nil)); end
+  def bundle_install?; end
+  def cable_gemfile_entry; end
+  def comment_if(value); end
+  def create_root; end
+  def database_gemfile_entry; end
+  def depend_on_bootsnap?; end
+  def depend_on_listen?; end
+  def depends_on_system_test?; end
+  def empty_directory_with_keep_file(destination, config = T.unsafe(nil)); end
+  def exec_bundle_command(bundle_command, command, env); end
+  def gemfile_entries; end
+  def gemfile_entry(name, *args); end
+  def generate_bundler_binstub; end
+  def include_all_railties?; end
+  def javascript_gemfile_entry; end
+  def jbuilder_gemfile_entry; end
+  def keep_file(destination); end
+  def keeps?; end
+  def os_supports_listen_out_of_the_box?; end
+  def psych_gemfile_entry; end
+  def rails_gemfile_entry; end
+  def rails_version_specifier(gem_version = T.unsafe(nil)); end
+  def run_bundle; end
+  def run_webpack; end
+  def set_default_accessors!; end
+  def skip_action_mailbox?; end
+  def skip_action_text?; end
+  def skip_active_storage?; end
+  def skip_dev_gems?; end
+  def spring_install?; end
+  def sqlite3?; end
+  def web_server_gemfile_entry; end
+  def webpack_install?; end
+  def webpacker_gemfile_entry; end
+
+  class << self
+    def add_shared_options_for(name); end
+    def strict_args_position; end
+  end
+end
+
+class Rails::Generators::AppBase::GemfileEntry < ::Struct
+  def initialize(name, version, comment, options = T.unsafe(nil), commented_out = T.unsafe(nil)); end
+
+  def version; end
+
+  class << self
+    def github(name, github, branch = T.unsafe(nil), comment = T.unsafe(nil)); end
+    def path(name, path, comment = T.unsafe(nil)); end
+    def version(name, version, comment = T.unsafe(nil)); end
+  end
+end
+
+module Rails::Generators::AppName
+  private
+
+  def app_const; end
+  def app_const_base; end
+  def app_name; end
+  def camelized; end
+  def defined_app_const_base; end
+  def defined_app_const_base?; end
+  def defined_app_name; end
+  def original_app_name; end
+  def valid_const?; end
+end
+
+Rails::Generators::AppName::RESERVED_NAMES = T.let(T.unsafe(nil), Array)
+
+class Rails::Generators::Base < ::Thor::Group
+  include ::Thor::Actions
+  include ::Rails::Generators::Actions
+  extend ::Thor::Actions::ClassMethods
+
+  private
+
+  def class_collisions(*class_names); end
+  def extract_last_module(nesting); end
+  def indent(content, multiplier = T.unsafe(nil)); end
+  def module_namespacing(&block); end
+  def namespace; end
+  def namespace_dirs; end
+  def namespaced?; end
+  def namespaced_path; end
+  def wrap_with_namespace(content); end
+
+  class << self
+    def add_shebang_option!; end
+    def banner; end
+    def base_name; end
+    def base_root; end
+    def class_option(name, options = T.unsafe(nil)); end
+    def default_aliases_for_option(name, options); end
+    def default_for_option(config, name, options, default); end
+    def default_generator_root; end
+    def default_source_root; end
+    def default_value_for_option(name, options); end
+    def desc(description = T.unsafe(nil)); end
+    def exit_on_failure?; end
+    def generator_name; end
+    def hide!; end
+    def hook_for(*names, &block); end
+    def hooks; end
+    def inherited(base); end
+    def namespace(name = T.unsafe(nil)); end
+    def prepare_for_invocation(name, value); end
+    def remove_hook_for(*names); end
+    def source_root(path = T.unsafe(nil)); end
+    def usage_path; end
+  end
+end
+
+Rails::Generators::DEFAULT_ALIASES = T.let(T.unsafe(nil), Hash)
+Rails::Generators::DEFAULT_OPTIONS = T.let(T.unsafe(nil), Hash)
+
+module Rails::Generators::Database
+  def initialize(*_arg0); end
+
+  def convert_database_option_for_jruby; end
+  def gem_for_database(database = T.unsafe(nil)); end
+
+  private
+
+  def mysql_socket; end
+end
+
+Rails::Generators::Database::DATABASES = T.let(T.unsafe(nil), Array)
+Rails::Generators::Database::JDBC_DATABASES = T.let(T.unsafe(nil), Array)
+class Rails::Generators::Error < ::Thor::Error; end
+
+class Rails::Generators::GeneratedAttribute
+  def initialize(name, type = T.unsafe(nil), index_type = T.unsafe(nil), attr_options = T.unsafe(nil)); end
+
+  def attachment?; end
+  def attachments?; end
+  def attr_options; end
+  def column_name; end
+  def default; end
+  def field_type; end
+  def foreign_key?; end
+  def has_index?; end
+  def has_uniq_index?; end
+  def human_name; end
+  def index_name; end
+  def index_name=(_arg0); end
+  def inject_index_options; end
+  def inject_options; end
+  def name; end
+  def name=(_arg0); end
+  def options_for_migration; end
+  def password_digest?; end
+  def plural_name; end
+  def polymorphic?; end
+  def reference?; end
+  def required?; end
+  def rich_text?; end
+  def singular_name; end
+  def token?; end
+  def type; end
+  def type=(_arg0); end
+  def virtual?; end
+
+  class << self
+    def parse(column_definition); end
+    def reference?(type); end
+
+    private
+
+    def parse_type_and_options(type); end
+  end
+end
+
+Rails::Generators::GeneratedAttribute::INDEX_OPTIONS = T.let(T.unsafe(nil), Array)
+Rails::Generators::GeneratedAttribute::UNIQ_INDEX_OPTIONS = T.let(T.unsafe(nil), Array)
+
+module Rails::Generators::Migration
+  extend ::ActiveSupport::Concern
+
+  mixes_in_class_methods ::Rails::Generators::Migration::ClassMethods
+
+  def create_migration(destination, data, config = T.unsafe(nil), &block); end
+  def migration_class_name; end
+  def migration_file_name; end
+  def migration_number; end
+  def migration_template(source, destination, config = T.unsafe(nil)); end
+  def set_migration_assigns!(destination); end
+end
+
+module Rails::Generators::Migration::ClassMethods
+  def current_migration_number(dirname); end
+  def migration_exists?(dirname, file_name); end
+  def migration_lookup_at(dirname); end
+  def next_migration_number(dirname); end
+end
+
+module Rails::Generators::ModelHelpers
+  def initialize(args, *_options); end
+
+  def skip_warn; end
+  def skip_warn=(val); end
+
+  private
+
+  def inflection_impossible?(name); end
+  def irregular_model_name?(name); end
+  def plural_model_name?(name); end
+
+  class << self
+    def included(base); end
+    def skip_warn; end
+    def skip_warn=(val); end
+  end
+end
+
+Rails::Generators::ModelHelpers::INFLECTION_IMPOSSIBLE_ERROR_MESSAGE = T.let(T.unsafe(nil), String)
+Rails::Generators::ModelHelpers::IRREGULAR_MODEL_NAME_WARN_MESSAGE = T.let(T.unsafe(nil), String)
+Rails::Generators::ModelHelpers::PLURAL_MODEL_NAME_WARN_MESSAGE = T.let(T.unsafe(nil), String)
+
+class Rails::Generators::NamedBase < ::Rails::Generators::Base
+  def initialize(args, *options); end
+
+  def file_name; end
+  def js_template(source, destination); end
+  def name; end
+  def name=(_arg0); end
+  def template(source, *args, &block); end
+
+  private
+
+  def application_name; end
+  def assign_names!(name); end
+  def attributes_names; end
+  def class_name; end
+  def class_path; end
+  def edit_helper; end
+  def file_path; end
+  def fixture_file_name; end
+  def human_name; end
+  def i18n_scope; end
+  def index_helper; end
+  def inside_template; end
+  def inside_template?; end
+  def model_resource_name(prefix: T.unsafe(nil)); end
+  def mountable_engine?; end
+  def namespaced_class_path; end
+  def new_helper; end
+  def parse_attributes!; end
+  def plural_file_name; end
+  def plural_name; end
+  def plural_route_name; end
+  def plural_table_name; end
+  def pluralize_table_names?; end
+  def redirect_resource_name; end
+  def regular_class_path; end
+  def route_url; end
+  def show_helper; end
+  def singular_name; end
+  def singular_route_name; end
+  def singular_table_name; end
+  def table_name; end
+  def uncountable?; end
+  def url_helper_prefix; end
+
+  class << self
+    def check_class_collision(options = T.unsafe(nil)); end
+  end
+end
+
+module Rails::Generators::ResourceHelpers
+  include ::Rails::Generators::ModelHelpers
+
+  def initialize(*args); end
+
+  private
+
+  def assign_controller_names!(name); end
+  def controller_class_name; end
+  def controller_class_path; end
+  def controller_file_name; end
+  def controller_file_path; end
+  def controller_i18n_scope; end
+  def controller_name; end
+  def orm_class; end
+  def orm_instance(name = T.unsafe(nil)); end
+
+  class << self
+    def included(base); end
+  end
 end
 
 # This module helps build the runtime properties that are displayed in
